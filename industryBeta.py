@@ -13,4 +13,8 @@ stocks = allPositionsAbbr[allPositionsAbbr['产品型1'] == '股票']
 stocksA = stocks.dropna()
 
 
+## 新增
+def capBeta(row):
+	return row[['RM市值']] * row[['Beta']]
+
 
