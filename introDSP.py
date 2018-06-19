@@ -737,11 +737,11 @@ df
 (df.where(df['SUMLEV'] == 50)
     .dropna()
     .set_index(['STNAME', 'CTYNAME'])
-    .rename(colums = {'ESTIMATESBASE2010': 'Estimates Base 2010'}))
+    .rename(columns = {'ESTIMATESBASE2010': 'Estimates Base 2010'}))
 
 df = df[df['SUMLEV'] == 50]
 df.set_index(['STNAME', 'CTYNAME'], inplace = True)
-df.rename(colums = {'ESTIMATESBASE2010': 'Estimates Base 2010'})
+df.rename(columns = {'ESTIMATESBASE2010': 'Estimates Base 2010'})
 
 
 import numpy as np
@@ -751,15 +751,19 @@ def min_max(row):
                 'POPESTIMATE2012',
                 'POPESTIMATE2013',
                 'POPESTIMATE2014',
-                'POPESTIMATE2015']] # why [[]]?
+                'POPESTIMATE2015']]  
     return pd.Series({'min': np.min(data), 'max': np.max(data)})
 
-# df.loc['Alabama', 'Autauga County']['POPESTIMATE2010', 'POPESTIMATE2011', 'POPESTIMATE2012', 'POPESTIMATE2013', 'POPESTIMATE2014', 'POPESTIMATE2015'] # right?
+# a = df.loc['Alabama', 'Autauga County'][['POPESTIMATE2010', 'POPESTIMATE2011', 'POPESTIMATE2012', 'POPESTIMATE2013', 'POPESTIMATE2014', 'POPESTIMATE2015']]
+# np.min(a)
+# np.max(a)
+df.apply(min_max, axis = 1) 
+    # 0 or 'index': apply function to each column
+    # 1 or 'columns': apply function to each row
 
-df.apply(min_max, axis = 1)
 
 import numpy as np
-df min_max(row):
+def min_max(row):
     data = row[['POPESTIMATE2010',
                 'POPESTIMATE2011',
                 'POPESTIMATE2012',
@@ -777,25 +781,25 @@ rows = ['POPESTIMATE2010',
         'POPESTIMATE2013',
         'POPESTIMATE2014',
         'POPESTIMATE2015']
-df.apply(lambda x: np.max(x[rows], axis = 1))
+df.apply(lambda x: np.max(x[rows]), axis = 1)
 
 
 ## Group by
 import pandas as pd
 import numpy as np
-df = pf.read_csv('census.csv')
+df = pd.read_csv('census.csv')
 df = df[df['SUMLEV'] == 50]
 df
 
 # %%timeit -n 10
 for state in df['STNAME'].unique():
     avg = np.average(df.where(df['STNAME'] == state).dropna()['CENSUS2010POP'])
-    print('Counties in state' + state + 'have an average population of' + str(avg))
+    print('Counties in state ' + state + ' have an average population of ' + str(avg))
 
 # %%timeit -n 10
 for group, frame in df.groupby('STNAME'):
     avg = np.average(frame['CENSUS2010POP'])
-    print('Counties in state' + group + 'have an average population of' + str(avg))
+    print('Counties in state ' + group + ' have an average population of ' + str(avg))
 
 df.head()
 
@@ -807,11 +811,10 @@ def fun(item):
         return 1
     return 2
 for group, frame in df.groupby(fun):
-    print('There are' + str(len(frame)) + 'records in group' + str(group) + 'for processing.')
+    print('There are ' + str(len(frame)) + ' records in group ' + str(group) + ' for processing.')
 
 df = pd.read_csv('census.csv')
 df = df[df['SUMLEV'] == 50]
-
 df.groupby('STNAME').agg({'CENSUS2010POP': np.average})
 
 print(type(df.groupby(level=0)['POPESTIMATE2010', 'POPESTIMATE2011']))
