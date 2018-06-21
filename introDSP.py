@@ -751,7 +751,7 @@ def min_max(row):
                 'POPESTIMATE2012',
                 'POPESTIMATE2013',
                 'POPESTIMATE2014',
-                'POPESTIMATE2015']]  
+                'POPESTIMATE2015']] # why [[]], row <- dataFrame, [[] <- list of columns ] <- index brackets
     return pd.Series({'min': np.min(data), 'max': np.max(data)})
 
 # a = df.loc['Alabama', 'Autauga County'][['POPESTIMATE2010', 'POPESTIMATE2011', 'POPESTIMATE2012', 'POPESTIMATE2013', 'POPESTIMATE2014', 'POPESTIMATE2015']]
@@ -801,6 +801,7 @@ for group, frame in df.groupby('STNAME'):
     avg = np.average(frame['CENSUS2010POP'])
     print('Counties in state ' + group + ' have an average population of ' + str(avg))
 
+
 df.head()
 
 df = df.set_index('STNAME')
@@ -813,12 +814,15 @@ def fun(item):
 for group, frame in df.groupby(fun):
     print('There are ' + str(len(frame)) + ' records in group ' + str(group) + ' for processing.')
 
+
 df = pd.read_csv('census.csv')
 df = df[df['SUMLEV'] == 50]
 df.groupby('STNAME').agg({'CENSUS2010POP': np.average})
 
+
 print(type(df.groupby(level=0)['POPESTIMATE2010', 'POPESTIMATE2011']))
-print(type(df.groupby(level=0)['POPESTIMATE2010']))
+print(type(df.groupby(level=0)['POPESTIMATE2010']))  # ?是什么
+
 
 (df.set_index('STNAME').groupby(level=0)['CENSUS2010POP']
     .agg({'avg':np.average, 'sum':np.sum}))
@@ -828,4 +832,92 @@ print(type(df.groupby(level=0)['POPESTIMATE2010']))
 
 (df.set_index('STNAME').groupby(level=0)['POPESTIMATE2010', 'POPESTIMATE2011']
     .agg({'POPESTIMATE2010':np.average, 'POPESTIMATE2011':np.sum}))
+
+
+
+
+# week4
+## Distributions in Pandas
+import numpy as np
+import pandas as pd
+
+
+np.random.binomial(1, 0.5)
+np.random.binomial(1000, 0.5)/1000
+
+chanceOfTornado = 0.01/100
+np.random.binomial(100000, chanceOfTornado)
+
+chanceOfTornado = 0.01
+tornadoEvents = np.random.binomial(1, chanceOfTornado, 1000000)
+two_days_in_a_row = 0
+for j in range(1, len(tornadoEvents) - 1):
+    if tornadoEvents[j] == 1 and tornadoEvents[j-1] == 1:
+        two_days_in_a_row += 1
+print('{} tornadoes back to back in {} years'.format(two_days_in_a_row, 10000000/365))
+
+np.random.uniform(0, 1)
+np.random.normal(0.75)
+
+Formula for standard deviation
+$$\sqrt(\frac{1}{N} \sums_{i=1}^N (x_i-\bar(x))^2)$$
+
+
+distribution = np.random.normal(0.75, size=1000)
+np.sqrt(np.sum((np.mean(distribution) - distribution) ** 2) / len(distribution))
+np.std(distribution)
+
+
+import scipy.stats as stats
+stats.kurtosis(distribution)
+stats.skew(distribution)
+
+chi_squares_df2 = np.random.chisquare(2, size = 10000)
+stats.skew(chi_squares_df2)
+
+chi_squares_df5 = np.random.chisquare(5, size = 10000)
+stats.skew(chi_squares_df5)
+
+
+$matplotlib inline
+import matplotlib
+import matplotlib.pyplot as plt
+
+output = plt.hist([chi_square_df2, chi_square_df5], bins=50, histtype='step', label=['2 degrees of freedom', '5 degrees of freedom'])
+plt.legend(loc='upper right')
+
+
+## Hypothesis Testing
+df = pd.read_csv('grades.csv')
+df.head()
+len(df)
+
+early = df[df['assignment1_submission'] <- '2015-12-31']
+late = df[df['assignment_submission'] > '2015-12-31']
+
+early.mean()
+late.mean()
+
+
+from scipy import stats
+stats.ttest_ind?
+stats.ttest_ind(early['assignment1_grade'], late['assignment1_grade'])
+
+stats.ttest_ind(early['assignment2_grade'], late['assignment2_grade'])
+
+stats.ttest_ind(early['assignment3_grade'], late['assignment3_grade'])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -70,10 +70,33 @@ census_df.head()
 
 # census_df.where(census_df['SUMLEV'] == 40).dropna() # SUMLEV == 40, COUNTY == 0
 
-def answer_five():
-    states = census_df['STNAME'].unqiue()
-    stateCountyNum = {}
-    for state in states:
-        countyNum = df[df['STNAME'] == state].count()
-        stateCountyNum[state] = countyNum
-    return stateCountyNum
+def answer_five1():
+    countyNum = {}
+    county_df = census_df[census_df['SUMLEV'] == 50]
+    for state in county_df['STNAME'].unique():
+        countyNum[state] = np.sum(county_df[county_df['STNAME'] == state].dropna()['COUNTY'])
+    countyNum = pd.Series(countyNum)
+    return countyNum.where(countyNum == np.max(countyNum)).dropna().index
+answer_five1()
+
+def answer_five2():
+    countyNum = {}
+    county_df = census_df[census_df['SUMLEV'] == 50]
+    for group, frame in county_df.groupby('STNAME'):
+        countySum = np.sum(frame['COUNTY'])
+        countyNum[group] = countySum
+    countyNum =pd.Series(countyNum)
+    return countyNum.where(countyNum == np.max(countyNum)).dropna().index
+answer_five2()
+
+
+def answer_five3():
+    county_df = census_df[census_df['SUMLEV'] == 50]
+    countyNum = county_df.set_index('STNAME').groupby(level = 0)['COUNTY'].agg({'COUNTY': np.sum})
+    return countyNum[countyNum['COUNTY'] == np.max(countyNum['COUNTY'])].index
+answer_five3()
+
+
+def answer_six():
+    popNum = census_df.set_index('STNAME').groupby(level = 0)['CENSUS2010POP'].agg({'CENSUS2010POP': np.sum})
+    return popNum.sort_values('CENSUS2010POP', ascending=False)[0:3].index
