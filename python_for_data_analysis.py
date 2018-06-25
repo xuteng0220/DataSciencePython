@@ -23,7 +23,7 @@ isinstance(c, (int, float)) # 判断变量（指向的对象）是否属于某�
 
 ### 属性和方法
 # attribute：存储在对象内部的其他python对象
-# method：与对象	有关的能够访问其内部数据的函数
+# method：与对象    有关的能够访问其内部数据的函数
 a = 'manunited'
 a.<Tab> # 返回a的所有方法
 getattr(a, 'split') # 返回特定方法是否属于该对象
@@ -88,7 +88,7 @@ a_tuple[1] = 'four'
 |int|整型（带符号整数）|
 |long|长整型（带符号整数，任意精度）|
 
-#### 数值类型
+### 数值类型
 ival = 123456789
 ival ** 3
 
@@ -100,7 +100,7 @@ fval1 = 1.23e-7
 
 cval = 1 + 2j # j表示虚数
 cval * (1 - 2j)
-#### 字符串
+### 字符串
 a = 'one way of writing a string'
 b = "another way"
 
@@ -141,24 +141,24 @@ template = '%.2f %s are worth $%d' # 字符串格式化输出
 template % (4.567, 'Argentine Pesos', 1)
 
 
-#### Booleans 布尔值
+### Booleans 布尔值
 True and True
 False and True
 
 a = [1, 2, 3]
 if a:
-	print('I found something!')
+    print('I found something!')
 
 b = []
 if not b:
-	print('Empty!')
+    print('Empty!')
 
 bool([]), bool([1, 2, 3])
 bool('Hello World!'), bool('')
 bool(0), bool(1)
 
 
-#### Type casting 类型转换
+### Type casting 类型转换
 s = '3.14159'
 fval = float(s)
 type(fval)
@@ -166,39 +166,37 @@ int(fval)
 bool(fval)
 
 
-#### None
+### None
 # it’s worth bearing in mind that None is not a reserved keywordbut rather a unique instance of NoneType
 a = None
 a is None
 
 b = 1
- b is not None
+b is not None
 
 def add_and_maybe_multiple(a, b, c=None): # None 作为参数默认值
-	result = a + b
-	
-	if c is not None:
-		result = result * c
+    result = a + b
+    if c is not None:
+        result = result * c
+    return result
+add_and_maybe_multiple(1, 2, 3)
 
-	return result
-
-
-#### Dates and Times
+### Dates and Times
 from datetime import datetime, date, time
-dt = datetime(2018, 02, 01, 22, 46, 59)
+dt = datetime(2018, 6, 22, 9, 45, 59)
 dt.day
-dt.mintue
+dt.minute
 dt.date()
 dt.time()
 
 dt.strftime('%m%d%Y %H:%M')
-
-datetime.strptime('20180202', '%Y%m%d')
-datetime.datetime(2018, 02, 02, 12, 00)
-
 dt.replace(minute = 0, second = 0)
 
-dt2 = datetime(2018, 05, 26)
+datetime.strptime('20180202', '%Y%m%d')
+
+
+
+dt2 = datetime(2018, 5, 26)
 delta = dt2 - dt
 delta
 type(delta)
@@ -206,42 +204,47 @@ type(delta)
 dt + delta
 
 ## 控制流
+### 条件判断
 `if elif else`
 
-if (x < 0):
-	print('negative')
+def equal0(x):
+    if (x < 0):
+        print('It\'s negative')
+    elif (x == 0):
+        print('equal to 0')
+    else:
+        print('positive')
+equal0(7)
 
-if (x < 0):
-	print('It\'s negative')
-elif (x == 0):
-	print('equal to 0')
-else:
-	print('positive')
 
 a = 5
 b = 7
 c = 8
 d = 4
 if a < b or c > d:  # c > d 不会被计算，python立即计算结果
-	print('made it')
+    print('made it')
 
 
-
+### 循环
 `for`
 
 seq = [1, 2, None, 4, None, 5]
 total = 0
 for value in seq:
-	if value is None:
-		continue
-	total += value
+    if value is None:
+        continue
+    total += value
+total
+
 
 seq = [1, 2, 0, 4, 6, 5, 2, 1]
 total_til_5 = 0
 for i in seq:
-	if i == 5:
-		break
-	total_til_5 += i
+    if i == 5:
+        break
+    total_til_5 += i
+total_til_5
+
 
 
 `while`
@@ -249,32 +252,40 @@ for i in seq:
 x = 256
 total = 0
 while x > 0:
-	if total > 500:
-		break
-	total += x
-	x = x // 2
+    if total > 500:
+        break
+    total += x
+    x = x // 2
+total
 
-`pass` # 空语句、空操作
-if x < 0:
-	print('negative')
-elif x == 0:
-	pass
-else:
-	print('positive')
+### 空语句
+`pass`
+
+def equal0(x):
+    if x < 0:
+        print('negative')
+    elif x == 0:
+        pass #空操作
+    else:
+        print('positive')
+equal0(7)
+equal0(0)
+equal0(-7)
+
 
 
 ### 异常处理
-float('3.1415')
 
+float('3.1415')
 
 float('something') # ValueError
 
-# 异常ValueError
+# 处理 ValueError
 def attempt_float(x):
-	try:
-		return float(x)
-	except ValueError: # try语句发生异常时，执行except语句
-		return x
+    try:
+        return float(x)
+    except ValueError: # try语句发生异常时，执行except语句
+        return x
 
 attempt_float('3.1415')
 attempt_float('something')
@@ -283,46 +294,50 @@ attempt_float('something')
 float((1, 2)) #TypeError
 attempt_float((1, 2)) #TypeError
 
+# 处理 ValueError TypeError
 def attempt_float1(x):
-	try:
-		return float(x)
-	except (ValueError, TypeError):
-		return x
+    try:
+        return float(x)
+    except (ValueError, TypeError):
+        return x
 
 attempt_float1((1, 2))
 
 
-f = open(path, 'w')
 
+
+f = open(path, 'w')
 try:
-	write_to_file(f)
+    write_to_file(f)
 finally: # 无论try语句成功与否，finally后的语句都执行
-	f.close()
+    f.close()
+
 
 f = open(path, 'w')
-
 try:
-	write_to_file(f)
+    write_to_file(f)
 except:
-	print('Failed')
+    print('Failed')
 else: # try语句成功时，执行else语句
-	print('Succeeded')
+    print('Succeeded')
 finally:
-	f.close()
+    f.close()
 
 
 range(10) # 返回一个用于逐个产生整数的迭代器
 range(0, 20, 2)
 
+
 seq = [1, 2, 3, 4, 5]
 for i in range(len(seq)):
-	val = seq[i]
+    val = seq[i]
+    print(val)
 
 sum = 0
-for i in range(10000): # 返回一个用于逐个产生整数的迭代器
-	if x % 3 == or x % 5 == 0:
-		sum += i
-
+for i in range(10000):
+    if (i % 3 == 0) or (i % 5 == 0):
+        sum += i
+sum
 
 
 ### 三元表达式
@@ -337,6 +352,7 @@ nested_tup = ((2, 3, 7), (11, 18))
 tuple([2, 3, 7])
 a_tup = tuple('string')
 a_tup[2]
+
 
 tup = tuple('foo', [1, 2], True)
 tup[2] = False # TypeErroe，tuple object dose not support item assignment
@@ -362,8 +378,8 @@ b, a = a, b # 交换变量名c = a, a = b, b =c
 
 seq = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
 for a, b, c in seq: # unpacking 长用于对tuple或list序列进行迭代
-	sum = a + b + c
-	print(sum)
+    sum = a + b + c
+    print(sum)
 
 #### tuple method
 # 由于tuple的大小和内存不能修改，其方法很少
@@ -455,7 +471,7 @@ seq3 = [True, False]
 zip(seq1, seq2, seq3)
 
 for i, (a, b) in enumerate(zip(seq1, seq2)):
-	print('%d: %s, %s' % (i, a, b))
+    print('%d: %s, %s' % (i, a, b))
 
 pitchers = [('ryan', 'giggs'), ('paul', 'scholes'), ('gary', 'nevil')]
 firstName, lastName = zip(*pitchers)
@@ -480,7 +496,7 @@ d1['b']
 
 d1[5] = 'some value'
 d1['dummy'] = 'another value'
-del d1[5]	#关键字del，删除k-v
+del d1[5]    #关键字del，删除k-v
 ret = d1.pop('dummy') #方法pop，删除k-v
 
 d1.keys() #返回key的iterator，无序
@@ -491,34 +507,34 @@ d1.update({'b' : 'foo', 'c' : 12}) #方法update将两个dict合并
 #### 元素两两配对，组成字典
 # mapping = {}
 # for key, value in zip(key_list, value_list):
-# 	mapping[key] = value
+#     mapping[key] = value
 mapping = dict(zip(range(5), reversed(range(5))))
 mapping
 
 
 
 # if key in some_dict:
-# 	value = some_dict[key]
+#     value = some_dict[key]
 # else:
-# 	value = default_value
+#     value = default_value
 value = some_dict.get(key, default_value) #dict的方法get/pop可以接受一个可供返回的默认值
 
 words = ['apple', 'bat', 'bar', 'atom', 'book']
 by_letter = {}
 for word in words:
-	letter = word[0]
-	if letter not in by_letter:
-		by_letter[letter] = [word]
-	else:
-		by_letter[letter].append(word)
+    letter = word[0]
+    if letter not in by_letter:
+        by_letter[letter] = [word]
+    else:
+        by_letter[letter].append(word)
 
 by_letter
 
 
 by_letter = {}
 for word in words:
-	letter = word[0]
-	by_letter.setdefault(letter, []).append(word)
+    letter = word[0]
+    by_letter.setdefault(letter, []).append(word)
 
 by_letter
 
@@ -527,7 +543,7 @@ by_letter
 from collections import defaultdict
 by_letter = defaultdict(list)
 for word in words:
-	by_letter[word[0]].append(word)
+    by_letter[word[0]].append(word)
 
 
 
@@ -580,8 +596,8 @@ loc_mapping1
 all_data = [['tom', 'billy', 'jefferson', 'andrew', 'wesley', 'steven', 'joe'], ['susie', 'casey', 'jill', 'ana', 'eva', 'jennifer', 'stephanie']]
 names_of_interest = []
 for names in all_data:
-	enough_es = [name for name in names if name.count('e') >= 2]
-	names_of_interest.extend(enough_es)
+    enough_es = [name for name in names if name.count('e') >= 2]
+    names_of_interest.extend(enough_es)
 
 result = [name for names in all_data for name in names if name.count('e') >= 2]
 
@@ -591,8 +607,8 @@ flattened
 # 等价于
 # flattened = []
 # for tup in some_tuples:
-# 	for x in tup:
-# 		flattened.extend(x)
+#     for x in tup:
+#         flattened.extend(x)
 
 
 
@@ -709,7 +725,7 @@ arr
 
 arr_slice = arr[5:8]
 arr_slice[1] = 12345
-arr #数组的切片是原始的数组视图，数据不会被复制，任何修改都会直接反映到源数组上。numpy用于处理大量数据，切片作用于源数据不会因为复制而造成内存和性能的浪费	
+arr #数组的切片是原始的数组视图，数据不会被复制，任何修改都会直接反映到源数组上。numpy用于处理大量数据，切片作用于源数据不会因为复制而造成内存和性能的浪费    
 
 arr_slice[:] = 63
 arr
@@ -775,7 +791,7 @@ data[names == 'david'] = 7
 #### 其他索引方式
 arr = np.empty((8, 4))
 for i in range(8):
-	arr[i] = i
+    arr[i] = i
 arr
 
 arr[[3, 7, -1, -5, 6]] # 按指定的顺序索引
@@ -850,14 +866,14 @@ cond1 = np.array([True, False, True, False])
 cond2 = np.array([False, True, True, False])
 result = []
 for i in range(4):
-	if cond1[i] and cond2[i]:
-		result.append(0)
-	elif cond1[i]:
-		result.append(1)
-	elif cond2[i]:
-		result.append(2)
-	else:
-		result.append(3)
+    if cond1[i] and cond2[i]:
+        result.append(0)
+    elif cond1[i]:
+        result.append(1)
+    elif cond2[i]:
+        result.append(2)
+    else:
+        result.append(3)
 
 result = np.where(cond1 & cond2, 0, np.where(cond1, 1, np.where(cond3, 2, 3)))
 
