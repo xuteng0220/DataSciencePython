@@ -37,6 +37,28 @@ stockA = stockA[stockA['产品型1'] == '股票'].dropna()
 bond = allPositions[['证券编码',  '证券名称', '数量', 'RM市值', 'DV01', '久期', '资产类型']] # 筛选出需要的列
 
 bond = bond[bond['资产类型'] == '债券'].dropna()
+grade = bond.copy()
+grade['absDuration'] = np.abs(grade['久期'])
+# grade.set_index(['absDuration'])
+
+def abs_duration(x):
+    if x[7] <= 3:
+        x[7] = 'y0y3'
+    elif x[7] <= 5:
+        x[7] = 'y3y5'
+    elif x[7] <= 7:
+        x[7] = 'y5y7'
+    else:
+        x[7] = '>y7'
+    return x
+
+# abc = np.array[[1, 2, 3],
+#                [4, 5, 6],
+#                [7, 8, 9],
+#                [10, 11, 12]]
+# abc.apply(abs_duration, axis = 0)
+rating = grade.apply(abs_duration, axis=1)
+gradeRate = rating.set_index('absDuration').groupby(level = 0)['RM市值'].agg({'RM市值': np.sum})
 
 
 
@@ -51,3 +73,4 @@ stockA.to_excel(writer, sheet_name = 'comStocks', index=False, header=True)
 bond.to_excel(writer, sheet_name = 'Duration', index=False, header=True)
 # 输出到sheet'评级'
 grade.to_excel(writer, sheet_name = '评级', index=False, header=True)
+gradeRate.to_excel(writer, sheet_name = '久期', index=False, header=True)
