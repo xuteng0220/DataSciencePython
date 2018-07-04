@@ -97,6 +97,26 @@ def answer_five3():
 answer_five3()
 
 
+
 def answer_six():
-    popNum = census_df.set_index('STNAME').groupby(level = 0)['CENSUS2010POP'].agg({'CENSUS2010POP': np.sum})
-    return popNum.sort_values('CENSUS2010POP', ascending=False)[0:3].index
+    counties_df = census_df[census_df['SUMLEV'] == 50]
+    top_counties_df = counties_df.sort_values(by=['STNAME','CENSUS2010POP'],ascending=False).groupby('STNAME').head(3)
+    ans = top_counties_df.groupby('STNAME').sum().sort_values(by='CENSUS2010POP').head(3).index.tolist()
+    return ans
+answer_six()
+# popNum = census_df.set_index('STNAME').groupby(level = 0)['CENSUS2010POP'].agg({'CENSUS2010POP': np.sum})
+# popNum.sort_values('CENSUS2010POP', ascending=False)[0:3].index
+
+
+
+counties_df = census_df[census_df['SUMLEV'] == 50]
+def changePop(row):
+    data = row[['POPESTIMATE2010', 'POPESTIMATE2011', 'POPESTIMATE2012', 'POPESTIMATE2013', 'POPESTIMATE2014', 'POPESTIMATE2015']]
+    return abs(data[1] - data[0]) + abs(data[2] - data(1)) + abs(data[3] - data[2]) + abs(data[4]- data[3])
+counties_df.apply(changePop, axis = 1)
+
+def answer_seven():
+    counties_df = census_df[census_df['SUMLEV'] == 50]
+    counties_df['changePop'] = abs(counties_df['POPESTIMATE2011'] - counties_df['POPESTIMATE2010']) + abs(counties_df['POPESTIMATE2012'] - counties_df['POPESTIMATE2011']) + abs(counties_df['POPESTIMATE2013'] - counties_df['POPESTIMATE2012']) + abs(counties_df['POPESTIMATE2014'] - counties_df['POPESTIMATE2013']) + abs(counties_df['POPESTIMATE2015'] - counties_df['POPESTIMATE2014'])
+    return counties_df.sort_values(by = 'changePop', ascending = False)[0]['COUNTY']
+answer_seven()

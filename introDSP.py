@@ -836,6 +836,18 @@ print(type(df.groupby(level=0)['POPESTIMATE2010']))  # ?是什么
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 # week4
 ## Distributions in Pandas
 import numpy as np
