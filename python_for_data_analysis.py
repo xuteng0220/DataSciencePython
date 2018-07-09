@@ -1229,7 +1229,7 @@ obj.reindex(['a', 'b', 'c', 'd', 'e'])
 obj.reindex(['a', 'b', 'c', 'e']， fill_value=0)
 
 obj3 = Series(['blue', 'purple', 'yellow'], index=[0, 2, 4])
-obj3.reindex(range(6), method='ffill') # 以前一个值补充index
+obj3.reindex(range(6), method='ffill') # 以上一个值补充index
 
 |reindex插值|说明|
 |--|--|
@@ -1288,6 +1288,15 @@ data.loc[['texas', 'california'], [3, 0, 1]]
 data.iloc[2]
 data.loc[:'california', 'three']
 data.loc[data.three > 5, :3]
+
+#### index有重复值时的索引
+obj = Series(range(5), index=['a', 'a', 'b', 'b', 'c'])
+obj.index.is_unique # index的属性is_unique
+obj['a'] # type: Series
+obj['c'] # type: value
+frame = DataFrame(np.random.rand(4, 3), index=['a', 'a', 'b', 'b'])
+df.loc['b']
+
 
 ### 算术运算和数据对齐
 s1 = Series([7, 3, 5, 9], index=['a', 'b', 'c', 'd'])
@@ -1348,8 +1357,300 @@ a.dtype
 a
 
 format = lambda x: '%.2f' % x
-frame.applemap(format) # DataFrame应用applymap函数作用于每一个元素
+frame.applymap(format) # DataFrame应用applymap函数作用于每一个元素
 frame['e'].map(format) # Series应用map函数作用于每一个元素
 
 
 ### 排序 排名
+
+obj = Series(range(4), index=['d', 'a', 'c', 'b'])
+obj.sort_index()
+
+frame = DataFrame(np.arange(8).reshape((2,4)), index=['three', 'one'], columns=['d', 'c', 'a', 'b'])
+frame.sort_index()
+frame.sort_index(axis=1)
+frame.sort_index(axis=1, ascending=False)
+
+obj = Series([1.5, 6.2, 9.1, 2.7])
+obj.order()
+
+obj = Series([1.5, np.nan, 6.2, 9.1, np.nan, 2.7])
+obj.order() # nan排序后放在末尾
+
+frame = DataFrame({'b': [3, 7, 2, 1], 'a': [7, 9, 6, 3]})
+frame.sort_index(by='b')
+frame.sort_index(by=['a', 'b'])
+
+obj = Series([7, -5, 7, 4, 2, 0, 4])
+obj.rank() # 给出排序值，rank的method有average(default)，min，max，first
+obj.rank(method='first')
+obj.rank(ascending=False, method='max')
+
+frame = DataFrame({'b': [3, 7, 2, 1], 'a': [8, 9, 7, 2], 'c': [6, 9, 5, 4]})
+frame.rank(axis=1)
+
+
+### 描述性统计
+df = DataFrame([1.5, np.nan], [1.7, 2.9], [np.nan, np.nan], [0.29, -3.8], index=['a', 'b', 'c', 'd'], columns=['one', 'two'])
+df.sum() # na值被忽略，只对非na起作用
+df.sum(axis=0)
+df.sum(axis=1)
+
+df.mean(axis=1, skipna=False)
+df.idxmax()
+df.idxmin()
+df.cumsum() # Q默认axis是什么
+df.describe()
+
+obj = Series(['a', 'a', 'b', 'c'] * 4)
+obj.describe()
+
+|描述性统计方法|说明|
+|--|--|
+|argmin/argmax|最小/大值的索引位置（整数）|
+|idxmin/idxmax|最小/大值的索引值|
+|mad|平均绝对离差|
+|skew|偏度|
+|kurt|峰度|
+|diff|一阶差分|
+|pct_change|百分比变化|
+
+import pandas.io.data as web
+
+all_data = {}
+for ticker in ['AAPL', 'IBM', 'MSFT', 'GOOG']:
+    all_data[ticker] = web.get_data_yahoo(ticker, '1/1/2000', '1/1/2010')
+price = DataFrame({tic: data['Adj Close'] for tic, data in all_data.iteritems()})
+volume = DataFrame({tic: data['volume'] for tic, data in all_data.iteritems()})
+
+returns = price.pct_change()
+returns.tail()
+
+returns.MSFT.corr(returns.IBM) # Series的corr
+returns.MSFT.cov(returns.IBM)
+
+returns.corr() # DataFrame的corr
+returns.cov() # 协方差矩阵
+
+returns.corrwith(returns.IBM)
+
+returns.corrwith(volume)
+
+obj = Series(['c', 'd', 'a', 'c', 'd', 'b', 'c'])
+uniques = obj.uniques()
+uniques.sort()
+obj.value_counts() # 计数
+pd.value_counts(obj.values, sort=False)
+
+mask = obj.isin(['b', 'd'])
+mask
+obj[mask]
+
+data = DataFrame({'Q1': [1, 3, 4, 3, 4], 'Q2': [2, 3, 1, 2, 3], 'Q3': [1, 5, 2, 4, 4]})
+data.apply(pd.value_counts).fillna(0)
+
+### 缺失值处理
+string_data = Series(['aardvark', 'artichole', np.nan, 'avocado'])
+string_data.isnull()
+string_data[0] = None
+string_data.isnull() # none也被当作na处理
+
+from numpy import nan as NA
+data = Series([1, NA, 3.5, NA, 7])
+data.dropna()
+data[data.notnull()]
+
+data0 = DataFrame([1, 6.5, 3], [1, NA, NA], [NA, NA, 1], [3, 2, 7]) # 与下面的data有何区别
+data = DataFrame([[1, 6.5, 3], [1, NA, NA], [NA, NA, 1], [3, 2, 7]])
+data.dropna() # dropna默认丢弃任何含有缺失值的行
+data.dropna(how='all') # 丢弃整行为NA的行
+data.dropna(axis=1, how='all')
+
+data[5] = NA # 增加一列，全为NA
+data.loc[5] = NA # 增加一行 
+
+df = DataFrame(np.random.randn(7, 3))
+df.loc[:4, 1] = NA
+df.loc[:2, 2] = NA
+df
+df.dropna(thresh=3) # thresh
+
+### 填充缺失值
+df.fillna(0)
+df.fillna({1: 7, 3: 11}) # 参数为字典形式，对指定的列填充指定的数值
+
+- = df.fillna(q, inplace=True) # fillna默认返回新对象，inplace对现有对象就地修改
+df
+
+df = DataFrame(np.random.randn(6, 3))
+df.loc[2:, 1] = NA
+df.loc[4:, 2] = NA
+df
+df.fillna(method='ffill')
+df.fillna(method='ffill', limit=3)
+
+data = Series([1., NA, 3.5, NA, 7])
+data.fillna(data.mean())
+
+
+### 层次化索引 hierarchical indexing
+data = Series(np.random.randn(10), index=[['a', 'a', 'a', 'b', 'b', 'b','c', 'c', 'd', 'd'], [1, 2, 3, 1, 2, 3, 1, 2, 2, 3]]) # 带有multiindex的Series
+data.index
+data['b']
+data['b': 'c']
+data.loc[['b', 'd']]
+data[:, 2]
+
+data.unstack() # 将有多重索引的Series转化为DataFrame
+data.unstack().stack()
+
+frame = DataFrame(np.arange(12).reshape((4, 3)), index=[['a', 'a', 'b', 'b'], [1, 2, 1, 2]], columns=[['ohio', 'ohio', 'california'], ['green', 'red', 'green']])
+frame.index.names = ['key1', 'key2']
+frame.columns.names = ['state', 'color']
+frame
+frame['ohio']
+MultiIndex.from_arrays([['ohio', 'ohio', 'california'], ['green', 'red', 'green'], names=['state', 'color']]) # Q?
+
+frame.swaplevel('key1', 'key2') # 调换index的层级
+frame.sortlevel(1) # Q？ 针对index，如何针对columns？
+frame.swaplevel(0, 1).sortlevel(0)
+
+frame.sum(level='key2')
+frame.sum(level='color', axis=1)
+
+
+### 列作为索引值
+frame = DataFrame({'a': range(7), 'b': range(7, 0, -1), 'c': ['one', 'two', 'two', 'three', 'one', 'two', 'three'], 'd': [0, 1, 1, 1, 2, 2, 1]})
+frame
+frame2 = frame.set_index(['c', 'd']) # 将列的值作为索引
+frame.set_index(['c', 'd'], drop=False) # 将列的值作为索引，同时保留列
+frame2.reset_index()
+
+### 其他
+# 整数索引会产生歧义
+s = Series(np.arange(3))
+s[-1] # 对于未指定索引值的数据，默认索引值为整数，用整数进行索引时可能报错
+s.iloc[-1]
+
+s1 = Series(np.arange(3), index=['a', 'b', 'c'])
+s1[-1]
+
+s2 = Series(range(3), index=[-5, 1, 3])
+s2.iget_value(2)
+
+frame = DataFrame(np.arange(6).reshape((3, 2)), index=[2, 0, 1])
+frame.irow(0)
+
+### 面板数据
+# panel
+import pandas.io.data as web
+pdata = pd.Panel(dict((stk, web.get_data_yahoo(stk, '1/1/2009', '6/1/2012')) for stk in ['APPL', 'GOOG', 'MSFT', 'DELL']))
+pdata
+
+pdata.swapaxes('item', 'minor')
+pdata['Adj Close']
+pdata.loc[:, '6/1/2012', :]
+pdata.loc['Adj Close', '5/22/2012':, :]
+
+stacked = pdata.loc[:, '5/30/2012', :].to_frame()
+stacked
+
+stacked.to_panel() # 将DataFrame转化成panel，to_frame是其逆
+
+
+
+
+
+
+
+# 数据规整：清理、转换、合并、重塑
+df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'a', 'b'], 'data1': range(7)})
+df2 = DataFrame({'key': ['a', 'b', 'd'], 'data2': range(3)})
+pd.merge(df1, df2) # 未指明的情况下，merge将重叠的列作为键进行合并
+pd.merge(df1, df2, on='key')
+
+df3 = DataFrame({'lkey': ['b', 'b', 'a', 'c', 'a', 'a', 'b'], 'data1': range(7)})
+df4 = DataFrame({'rkey': ['a', 'b', 'd'], 'data2': range(3)})
+pd.merge(df1, df2, left_on='lkey', right_on='rkey') # merge默认是inner连接
+pd.merge(df1, df2, how='outer')
+
+df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'b'], 'data1': range(6)})
+df2 = DataFrame({'key': ['a', 'b', 'a', 'b', 'd'], 'data2': range(5)})
+pd.merge(df1, df2, on='key', how='left') # 多对多连接产生的是行的笛卡尔积
+pd.merge(df1, df2, how='inner')
+
+# 数据聚合和分组运算
+# 分组运算的术语split apply combine（拆分 应用 合并）
+df = DataFrame({'key1': ['a', 'a', 'b', 'b', 'a'], 
+                'key2': ['one', 'two', 'one', 'two', 'one'], 
+                'data1': np.random.randn(5), 
+                'data2': np.random.randn(5)})
+df
+
+grouped = df['data1'].groupby(df['key1']) # 以数据框中的列data1被分组对象，key1分组键
+grouped
+grouped.mean()
+
+mean1 = df['data1'].groupby([df['key1'], df['key2']]).mean()
+mean1.unstack()
+
+states = np.array(['ohio', 'california', 'california', 'ohio', 'ohio'])
+years = np.array([2005, 2005, 2006, 2005, 2006])
+df['data1'].groupby([states, years]).mean() # 可以是任意长度适当的（无关）数据作为分组键
+
+df.groupby('key1').mean() # 直接将数据框的列名作为参数，作为分组键
+df.groupby(['key1', 'key2']).mean()
+
+df.groupby(['key1', 'key2']).size() # 分组过程中，缺失值会被提出（未来版本的pandas中可能用NA代替）
+
+## 对分组进行迭代
+for name, group in df.groupby('key1'):
+    print name
+    print group
+for (k1, k2), group in df.groupby(['key1', 'key2']):
+    print k1, k2
+    print group
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
