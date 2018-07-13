@@ -1564,6 +1564,7 @@ stacked.to_panel() # 将DataFrame转化成panel，to_frame是其逆
 
 
 # 数据规整：清理、转换、合并、重塑
+## 合并数据集
 df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'a', 'b'], 'data1': range(7)})
 df2 = DataFrame({'key': ['a', 'b', 'd'], 'data2': range(3)})
 pd.merge(df1, df2) # 未指明的情况下，merge将重叠的列作为键进行合并
@@ -1578,6 +1579,29 @@ df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'b'], 'data1': range(6)})
 df2 = DataFrame({'key': ['a', 'b', 'a', 'b', 'd'], 'data2': range(5)})
 pd.merge(df1, df2, on='key', how='left') # 多对多连接产生的是行的笛卡尔积
 pd.merge(df1, df2, how='inner')
+
+lef = DataFrame({'key1': ['foo', 'foo', 'bar'],
+                 'key2': ['one', 'two', 'one'],
+                 'lval': [1, 2, 3]})
+right = DataFrame({'key1': ['foo', 'foo', 'bar', 'bar'],
+                   'key2': ['one', 'one', 'one', 'two'],
+                   'rval': [4, 5, 6, 7]})
+pd.merge(left, right, on=['key1', 'key2'], how='outer')
+
+pd.merge(left, right, on='key1') # 被合并的数据，列名称重复
+pd.merge(left, right, on='key1', suffixes=('_left', '_right')) # 参数suffixes，对重复列名称加上指定的后缀
+
+
+## 索引上的合并
+df1 = DataFrame({'key': ['a', 'b', 'a', 'a', 'b', 'c'],
+                 'value': range(6)})
+df2 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
+pd.merge(df1, df2, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为哦哦链接的键
+
+
+
+
+
 
 # 数据聚合和分组运算
 # 分组运算的术语split apply combine（拆分 应用 合并）
