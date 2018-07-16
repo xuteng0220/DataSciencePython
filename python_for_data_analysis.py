@@ -1592,11 +1592,57 @@ pd.merge(left, right, on='key1') # 被合并的数据，列名称重复
 pd.merge(left, right, on='key1', suffixes=('_left', '_right')) # 参数suffixes，对重复列名称加上指定的后缀
 
 
-## 索引上的合并
-df1 = DataFrame({'key': ['a', 'b', 'a', 'a', 'b', 'c'],
+## 索引作为链接键进行合并
+left1 = DataFrame({'key': ['a', 'b', 'a', 'a', 'b', 'c'],
                  'value': range(6)})
-df2 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
-pd.merge(df1, df2, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为哦哦链接的键
+left2 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
+pd.merge(left1, right2, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为链接的键
+pd.merge(left1, right2, left_on='key', right_index=True, how='outer')
+
+lefth = DataFrame({'key': ['ohio', 'ohio', 'ohio', 'nevada', 'nevada'], 'key2': [2000, 20001, 2002, 20001, 2002], 'data': np.arange(5.)})
+righth = DataFrame({np.arange(12).reshape((6, 2)), index=[['nevada', 'nevada', 'ohio', 'ohio', 'ohio', 'ohio'], [2001, 2000, 2000, 2000, 2001, 2002]], columns=['event1', envent2]}) # 层次化索引，多个索引列
+pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True) 
+pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True, how='outer')
+
+left2 = DataFrame([[1., 2.], [3., 4.], [5., 6.]], index=['a', 'c', 'e'], columns=['ohio', 'nevada'])
+right2 = DataFrame([[7., 8.], [9., 20.], [11., 12.], [13., 14.]], index=['b', 'c', 'd', 'e'], columns=['missouri', 'alabama'])
+pd.merge(left2, right2, how='outer', left_index=True, right_index=True)
+
+left2.join(right2, how='outer') # join方法用于合并两个数据框，默认以index作为链接键
+left1.join(right1, on='key') # df1的index与df2的列key作为链接键
+
+another = DataFrame([[7., 8.], [9., 10.], [11., 12.], [16., 17.]], index=['a', 'c', 'e', 'f'], columns=['new york', 'oregon'])
+left2.join([right2, another])
+left2.join([right2, another], how='outer')
+
+## 轴向链接
+arr =np.arange(12).rehape((3, 4))
+np.concatenate([arr, arr], axis=1) # numpy的concatenate函数，用于ndarray数组的合并
+
+s1 = Series([0, 1], index=['a', 'b'])
+s2 = Series([2, 3, 4], index=['c', 'd', 'e'])
+s3 = Series([5, 6], index=['f', 'g'])
+pd.concat([s1, s2, s3]) # pandas函数concat将serieses合并，默认行合并
+# [s1, s2, s3] # ？直接能合并吗
+# s1 + s2 + s3 # ？
+pd.concat([s1, s2, s3], axis=1)
+
+s4 = pd.concat([s1 * 5, s3])
+pd.concat([s1, s4], axis=1)
+pd.concat([s1, s4], axis=1, join='inner')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
