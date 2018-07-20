@@ -1630,8 +1630,43 @@ pd.concat([s1, s2, s3], axis=1)
 s4 = pd.concat([s1 * 5, s3])
 pd.concat([s1, s4], axis=1)
 pd.concat([s1, s4], axis=1, join='inner')
+pd.concat([s1, s4], axis=1, join_axes=[['a', 'c', 'b', 'e']])
+result = pd.concat([s1, s1, s3], keys=['one', 'two', 'three'])
+result
+result.unstack()
+
+pd.concat([s1, s2, s3], axis=1, keys=['one', 'two', 'three'])
+
+df1 = DataFrame(np.arange(6).reshape((3, 2)), index=['a', 'b', 'c'],columns=['one', 'two'])
+df2 = DataFrame(5 + np.arange(4).reshape((2, 2)), index=['a', 'b', 'c'], columns=['one', 'two'])
+pd.concat([df1, df2], axis=1, keys=['level1', 'level2'])
+
+pd.concat({'level1': df1, 'level2': df2}, axis=1) # dict的key被当作合并时的keys
+pd.concat([df1, df2], keys=['level1', 'level2'], names=['upper', 'lower'])
+
+df1 = DataFrame(np.random.randn(3, 4), columns=['a', 'b', 'c', 'd'])
+df2 = DataFrame(np.random.randn(2, 3), columns=['b', 'd', 'a'])
+pd.concat([df1, df2], ignore_index=True)
 
 
+## 有重叠的数据集的合并
+a = Series([np.nan, 2.3, np.nan, 3.3, 4.3, np.nan], index=['f', 'e', 'd', 'c', 'b', 'a'])
+b = Series(np.arange(len(a), dtype=np.float64), index=['f', 'e', 'd', 'c', 'b', 'a'])
+b[-1] = np.nan
+np.where(pd.isnull(a), b, a)
+b[:-2].combine_first(a[2:]) # Q b[:-2] a[2:]
+
+df1 = DataFrame({'a': [1., np.nan, 5., np.nan], 'b': [np.nan, 2., np.nan, 6.], 'c': range(2, 18, 4)})
+df2 = DataFrame({'a': [5., 4., np.nan, 3., 7.], 'b': [np.nan, 3., 4., 6., 8.]})
+df1.combine_first(df2)
+
+
+## 数据集重构和数据透视表
+data = DataFrame(np.arange(6).reshape((2, 3)), index=pd.Index(['ohio', 'colorado'], namse='state'), columns=pd.Index=(['one', 'two', 'three']), name='number')
+result = data.stack() # 将数据堆栈起来
+result.unstack() # 外层index为行，内层index为列
+result.unstack(0)
+result.unstack('state')
 
 
 
