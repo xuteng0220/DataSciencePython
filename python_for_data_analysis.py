@@ -72,7 +72,7 @@ a_list = ['foo', 2, [4, 5]] # list可变
 a_list[2] = (3, 4)
 a_list
 
-# 不可变的immutable，是指不能修改内存块的数据。即便修改了，实际是创建了一个信对象，并将其引用赋值给原变量
+# 不可变的immutable，是指不能修改内存块的数据。即便修改了，实际是创建了一个新对象，并将其引用赋值给原变量
 a_tuple = (3, 5, (3, 4)) # tuple 是不可变对象
 a_tuple[1] = 'four'
 
@@ -189,10 +189,10 @@ dt.minute
 dt.date()
 dt.time()
 
-dt.strftime('%m%d%Y %H:%M')
+dt.strftime('%m%d%Y %H:%M') # f: format
 dt.replace(minute = 0, second = 0)
 
-datetime.strptime('20180202', '%Y%m%d')
+datetime.strptime('20180202', '%Y%m%d') # p: parse 解析
 
 
 
@@ -257,6 +257,25 @@ while x > 0:
     total += x
     x = x // 2
 total
+
+
+
+range(10) # 返回一个用于逐个产生整数的迭代器
+range(0, 20, 2)
+
+
+seq = [1, 2, 3, 4, 5]
+for i in range(len(seq)):
+    val = seq[i]
+    print(val)
+
+sum = 0
+for i in range(10000):
+    if (i % 3 == 0) or (i % 5 == 0):
+        sum += i
+sum
+
+
 
 ### 空语句
 `pass`
@@ -324,21 +343,6 @@ finally:
     f.close()
 
 
-range(10) # 返回一个用于逐个产生整数的迭代器
-range(0, 20, 2)
-
-
-seq = [1, 2, 3, 4, 5]
-for i in range(len(seq)):
-    val = seq[i]
-    print(val)
-
-sum = 0
-for i in range(10000):
-    if (i % 3 == 0) or (i % 5 == 0):
-        sum += i
-sum
-
 
 ### 三元表达式
 x = 5
@@ -356,7 +360,7 @@ a_tup[2]
 
 tup = ('foo', [1, 2], True)
 tup[2] = False # TypeErroe，tuple object dose not support item assignment
-tup[1].append(3) # Q 怎么解释，A tup[1]指向了一个list，list不能变，list指向的元素可以变
+tup[1].append(3) # Q 怎么解释，A tup[1]指向了一个list，list作为tuple的一个元素不能变，list指向的元素可以变
 tup
 
 (3, None, 'foo') + (6, 0) + ('bar',) # ('bar') is a sting, ('bar',) is a tuple
@@ -485,11 +489,11 @@ for i, (a, b) in enumerate(zip(seq1, seq2)):
     print('%d: %s, %s' % (i, a, b))
 
 pitchers = [('ryan', 'giggs'), ('paul', 'scholes'), ('gary', 'nevil')]
-firstName, lastName = zip(*pitchers)
+firstName, lastName = zip(*pitchers) # 先zip，后unpack
 firstName
 lastName
 # 将元组中的数unzip
-# *的用法相当于zip(pitchers[0], piichers[1], ..., pitchers[len(seq) - 1])
+# *seq的用法相当于seq[0], seq[1], ..., seq[len(seq) - 1]
 
 list(range(10))
 list(reversed(range(10))) # reversed 按逆序迭代序列中的元素
@@ -1580,7 +1584,7 @@ df2 = DataFrame({'key': ['a', 'b', 'a', 'b', 'd'], 'data2': range(5)})
 pd.merge(df1, df2, on='key', how='left') # 多对多连接产生的是行的笛卡尔积
 pd.merge(df1, df2, how='inner')
 
-lef = DataFrame({'key1': ['foo', 'foo', 'bar'],
+left = DataFrame({'key1': ['foo', 'foo', 'bar'],
                  'key2': ['one', 'two', 'one'],
                  'lval': [1, 2, 3]})
 right = DataFrame({'key1': ['foo', 'foo', 'bar', 'bar'],
@@ -1595,12 +1599,12 @@ pd.merge(left, right, on='key1', suffixes=('_left', '_right')) # 参数suffixes�
 ## 索引作为链接键进行合并
 left1 = DataFrame({'key': ['a', 'b', 'a', 'a', 'b', 'c'],
                  'value': range(6)})
-left2 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
-pd.merge(left1, right2, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为链接的键
-pd.merge(left1, right2, left_on='key', right_index=True, how='outer')
+right1 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
+pd.merge(left1, right1, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为链接的键
+pd.merge(left1, right1, left_on='key', right_index=True, how='outer')
 
-lefth = DataFrame({'key': ['ohio', 'ohio', 'ohio', 'nevada', 'nevada'], 'key2': [2000, 20001, 2002, 20001, 2002], 'data': np.arange(5.)})
-righth = DataFrame({np.arange(12).reshape((6, 2)), index=[['nevada', 'nevada', 'ohio', 'ohio', 'ohio', 'ohio'], [2001, 2000, 2000, 2000, 2001, 2002]], columns=['event1', envent2]}) # 层次化索引，多个索引列
+lefth = DataFrame({'key1': ['ohio', 'ohio', 'ohio', 'nevada', 'nevada'], 'key2': [2000, 20001, 2002, 20001, 2002], 'data': np.arange(5.)})
+righth = DataFrame({np.arange(12).reshape((6, 2)), index=[['nevada', 'nevada', 'ohio', 'ohio', 'ohio', 'ohio'], [2001, 2000, 2000, 2000, 2001, 2002]], columns=['event1', 'envent2']}) # 层次化索引，多个索引列
 pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True) 
 pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True, how='outer')
 
@@ -1609,9 +1613,10 @@ right2 = DataFrame([[7., 8.], [9., 20.], [11., 12.], [13., 14.]], index=['b', 'c
 pd.merge(left2, right2, how='outer', left_index=True, right_index=True)
 
 left2.join(right2, how='outer') # join方法用于合并两个数据框，默认以index作为链接键
-left1.join(right1, on='key') # df1的index与df2的列key作为链接键
+left1.join(right2, on='key') # right2的index与left1的列key作为链接键
 
 another = DataFrame([[7., 8.], [9., 10.], [11., 12.], [16., 17.]], index=['a', 'c', 'e', 'f'], columns=['new york', 'oregon'])
+# Q [right2, another] 是什么？
 left2.join([right2, another])
 left2.join([right2, another], how='outer')
 
@@ -1630,6 +1635,69 @@ pd.concat([s1, s2, s3], axis=1)
 s4 = pd.concat([s1 * 5, s3])
 pd.concat([s1, s4], axis=1)
 pd.concat([s1, s4], axis=1, join='inner')
+pd.concat([s1, s4], axis=1, join_axes=[['a', 'c', 'b', 'e']])
+result = pd.concat([s1, s1, s3], keys=['one', 'two', 'three'])
+result
+result.unstack()
+
+pd.concat([s1, s2, s3], axis=1, keys=['one', 'two', 'three'])
+
+df1 = DataFrame(np.arange(6).reshape((3, 2)), index=['a', 'b', 'c'],columns=['one', 'two'])
+df2 = DataFrame(5 + np.arange(4).reshape((2, 2)), index=['a', 'b', 'c'], columns=['one', 'two'])
+pd.concat([df1, df2], axis=1, keys=['level1', 'level2'])
+
+pd.concat({'level1': df1, 'level2': df2}, axis=1) # dict的key被当作合并时的keys
+pd.concat([df1, df2], keys=['level1', 'level2'], names=['upper', 'lower'])
+
+df1 = DataFrame(np.random.randn(3, 4), columns=['a', 'b', 'c', 'd'])
+df2 = DataFrame(np.random.randn(2, 3), columns=['b', 'd', 'a'])
+pd.concat([df1, df2], ignore_index=True)
+
+
+## 有重叠的数据集的合并
+a = Series([np.nan, 2.3, np.nan, 3.3, 4.3, np.nan], index=['f', 'e', 'd', 'c', 'b', 'a'])
+b = Series(np.arange(len(a), dtype=np.float64), index=['f', 'e', 'd', 'c', 'b', 'a'])
+b[-1] = np.nan
+np.where(pd.isnull(a), b, a)
+b[:-2].combine_first(a[2:]) # Q b[:-2] a[2:]
+
+df1 = DataFrame({'a': [1., np.nan, 5., np.nan], 'b': [np.nan, 2., np.nan, 6.], 'c': range(2, 18, 4)})
+df2 = DataFrame({'a': [5., 4., np.nan, 3., 7.], 'b': [np.nan, 3., 4., 6., 8.]})
+df1.combine_first(df2)
+
+
+## 数据集重构和数据透视表
+data = DataFrame(np.arange(6).reshape((2, 3)), index=pd.Index(['ohio', 'colorado'], namse='state'), columns=pd.Index=(['one', 'two', 'three']), name='number')
+result = data.stack() # 将数据堆栈起来
+result.unstack() # 外层index为行，内层index为列
+result.unstack(0)
+result.unstack('state')
+
+s1 = Series([0, 1, 2, 3], index=['a', 'b', 'c', 'd'])
+s2 = Series([4, 5, 6], index=['c', 'd', 'e'])
+data2 = pd.concat([s1, s2], keys=['one', 'two'])
+data2
+data2.unstack()
+data2.unstack().stack()
+data2.unstack().stack(dropna=False)
+
+
+df = DataFrame({'left': result, 'right': result + 5}, columns=pd.Index(['left', 'right'], name='side'))
+df
+df.unstack('state')
+df.unstack('state').stack('side')
+
+
+##
+
+
+
+
+
+
+
+
+
 
 
 
