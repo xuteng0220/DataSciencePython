@@ -1650,6 +1650,7 @@ pd.concat([s1, s4], axis=1, join='inner')
 
 
 # 数据聚合和分组运算
+## 数据分组
 # 分组运算的术语split apply combine（拆分 应用 合并）
 df = DataFrame({'key1': ['a', 'a', 'b', 'b', 'a'], 
                 'key2': ['one', 'two', 'one', 'two', 'one'], 
@@ -1671,9 +1672,9 @@ df['data1'].groupby([states, years]).mean() # 可以是任意长度适当的（�
 df.groupby('key1').mean() # 直接将数据框的列名作为参数，作为分组键
 df.groupby(['key1', 'key2']).mean()
 
-df.groupby(['key1', 'key2']).size() # 分组过程中，缺失值会被提出（未来版本的pandas中可能用NA代替）
+df.groupby(['key1', 'key2']).size() # 分组过程中，缺失值会被剔除（未来版本的pandas中可能用NA代替）
 
-## 对分组进行迭代
+### 对分组进行迭代
 for name, group in df.groupby('key1'):
     print name
     print group
@@ -1681,24 +1682,142 @@ for (k1, k2), group in df.groupby(['key1', 'key2']):
     print k1, k2
     print group
 
+pieces = dict(list(df.groupby('key1'))) # 将groupby后的数据转换成字典
+pieces['b']
+
+grouped = df.groupby(df.dtypes, axis=1) # groupby默认对axis=0进行分组
+dict(list(grouped))
+
+
+### 选取一列或一组列进行分组
+df = DataFrame({'key1': ['a', 'a', 'b', 'b', 'a'], 
+                'key2': ['one', 'two', 'one', 'two', 'one'], 
+                'data1': np.random.randn(5), 
+                'data2': np.random.randn(5)})
+df.groupby('key1')['data1']
+df['data1'].groupby(df['key1']) # 以上两行代码等价。先分组再取索引=先取索引再分组
+
+df.groupby('key1')[['data2']]
+df[['data2']].groupby(df['key1']) # 以上两行代码等价
+
+df['data1']
+df[['data1']] # Q 有什么区别吗？
+
+df.groupby(['key1', 'key2'])[['data2']].mean() # 对大型数据集采用选取列分组，效率高
+
+s_grouped = df.groupby(['key1', 'key2'])['data2']
+s_grouped
+s_grouped.mean()
+
+
+### 通过字典或Series分组
+people = DataFrame(np.random.randn(5, 5), columns=['a', 'b', 'c', 'd', 'e'], index=['joe', 'steven', 'wes', 'jim', 'travis'])
+people.loc[2:3, ['b', 'c']] = np.nan
+people
+
+mapping = {'a': 'red', 'b': 'red', 'c': 'blue', 'd': 'blue', 'e': 'red', 'f': 'orange'}
+by_column = people.groupby(mapping, axis=1) # 以dict为分组键
+by_column.sum()
+
+map_series = Series(mapping)
+people.groupby(map_series, axis=1).count()
+
+### 通过函数进行分组
+people.groupby().sum() # 默认情况下，分组键即为index
+people.groupby(len).sum() # 参数为一个函数，对index作用函数后的值作为分组键
+
+key_list = ['one', 'one', 'one', 'two', 'two']
+people.groupby([len, key_list]).min() # 函数和list、dict等混合使用，作为分组键
+
+### 根据索引级别分组（有层次化索引的数据集）
+columns = pd.MultiIndex.frrom_arrarys([['us', 'us', 'us', 'jp', 'jp'], [1, 3, 5, 1, 3]], names=['cty', 'tenor'])
+hier_df = DataFrame(np.random.randm(4, 5), columns=columns)
+hier_df
+hier_df.groupby(level='cty', axis=1).count() # 参数level传入索引编号，对该层级索引进行分组
+
+
+## 数据聚合
+# 数据聚合是指从数据集出发，进行分组整合，再产生标量值的数据转换过程
+df = DataFrame({'key1': ['a', 'a', 'b', 'b', 'a'], 
+                'key2': ['one', 'two', 'one', 'two', 'one'], 
+                'data1': np.random.randn(5), 
+                'data2': np.random.randn(5)})
+df
+grouped = df.groupby('key1')
+grouped['data1'].quantile(0.9)
+
+def peak_to_(arr):
+    return arr.max() - arr.min()
+grouped.agg(peak_to_peak) # agg/aggregate方法，将传入的函数作用在分组上，得到标量值
+grouped.describe()
+
+
+### 面向列的多函数应用
+# 对不同的列应用不同的函数
+tips = pd.read_csv('ch08/tips.csv') # tips.csv数据集见github
+tips['tip_pct'] = tips['tips'] / tips['total_bill']
+tips[:6]
+
+grouped = tips.groupby(['sex', 'smoker'])
+grouped_pct = grouped['tip_pct']
+grouped_pct.agg('mean') # 聚合函数名以字符串的形式传入
+grouped_pct.agg(['mean', 'std', peak_to_peak]) # 自定义函数，直接传入函数名；返回的数据集，其列以函数名命名
+grouped_pct.agg([('foo', 'mean'), ('bar', np.std)]) # 以元组的形式传入自定义列名和对应作用的函数
+
+functions = ['count', 'mean', 'max']
+result = grouped['tip_pct', 'total_bill'].agg(functions) # 相当于对列分别进行聚合，再用concat链接起来
+result
+result['tip_pct']
+result1 = grouped['tip_pct'].agg(functions)
+result2 = grouped['total_bill'].agg(functions)
+pd.concat([result1, result2], keys=['sex', ‘smoker’])
+
+ftuples = [('ryan', 'mean'), ('paul', np.var)]
+grouped['tip_pct', 'total_bill'].agg(ftuples)
+
+grouped.agg({'tip': np.max, 'size': 'sum'}) # 用dict将列与函数构成映射关系，对不同的列作用不同的函数
+grouped.agg({'tip_pct': ['min', 'max', 'mean', 'std'], 'size': 'sum'})
+
+tips.groupby(['sex', 'smocker'], as_index=False).mean() # as_index=False，分组键不再作为分组后的index
 
 
 
+## 分组
+df = DataFrame({'key1': ['a', 'a', 'b', 'b', 'a'], 
+                'key2': ['one', 'two', 'one', 'two', 'one'], 
+                'data1': np.random.randn(5), 
+                'data2': np.random.randn(5)})
+df
+k1_means = df.groupby('key1').mean().add_prefix('mean_') # 加上前缀
+k1_means
+pd.merge(df, k1_means, left_on='key1', right_index=True) # 将分组后的均值以列的形式添加到原数据集中
+
+df.groupby('key1').transform(np.mean)
+
+people = DataFrame(np.random.randn(5, 5), columns=['a', 'b', 'c', 'd', 'e'], index=['joe', 'steven', 'wes', 'jim', 'travis'])
+key = ['one', 'two', 'one', 'two', 'one']
+people.groupby(key).mean()
+people.groupby(key).transform(np.mean) # transform将函数应用到各分组上，再将结果放置到各分组对应的位置
+
+def demean():
+    return arr - arr.mean() # 数据集减去其均值
+demeaned = people.grouby(key).tranform(demean)
+demeaned.groupby(key).mean()
 
 
+tips = pd.read_csv('ch08/tips.csv') # tips.csv数据集见github
+tips['tip_pct'] = tips['tips'] / tips['total_bill']
 
+def top(df, n=5, column='tip_pct'):
+    return df.sort_index(by=column)[-n:] # 将数据集在指定列找出最大值，把这个值所在的行选出来
+top(tips, n=6)
 
+tips.groupby('smoker').apply(top)
+tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill')
 
-
-
-
-
-
-
-
-
-
-
+tips.groupby('smoker')['tip_pct'].describe().unstack('smoker') # 等价于下述代码
+f = lambda x: x.describe()
+tips.groupby('smoker')['tip_pct'].apply(f)
 
 
 
