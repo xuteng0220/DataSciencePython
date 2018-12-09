@@ -1873,6 +1873,7 @@ demeaned = people.grouby(key).tranform(demean)
 demeaned.groupby(key).mean()
 
 
+## apply
 tips = pd.read_csv('ch08/tips.csv') # tips.csv数据集见github
 tips['tip_pct'] = tips['tips'] / tips['total_bill']
 
@@ -1881,13 +1882,38 @@ def top(df, n=5, column='tip_pct'):
 top(tips, n=6)
 
 tips.groupby('smoker').apply(top)
-tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill')
+tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill') #传给apply的函数有其他参数，可以紧接在后面一起传给apply
 
-tips.groupby('smoker')['tip_pct'].describe().unstack('smoker') # 等价于下述代码
+result = tips.groupby('smoker')['tip_pct'].describe()
+result.unstack()
+
 f = lambda x: x.describe()
-tips.groupby('smoker')['tip_pct'].apply(f)
+tips.groupby('smoker')['tip_pct'].apply(f) # 与前两行等价
+
+tips.groupby('smoker', group_keys=False).apply(top) # groupby_keys=False 分组键不再作为结果的索引
 
 
+## 分为数和桶分析
+frame = DataFrame({'data1': np.random.randn(1000), 'data2': np.random.randn(1000)})
+factor = pd.cut(frame.data1, 4) # 分成等长区间的4组
+factor[:10]
+
+def get_stats(group):
+    return {'min': group.min(), 'max': group.max(), 'count': group.count(), 'mean': group.mean()}
+grouped = frame.data2.groupby(factor) # 按data1的factor分组
+grouped.apply(get_stats).unstack() # 分组结果按get_stats统计  grouped.apply(get_stats)
+
+grouping = pd.qcut(frame.data1, 10, labels=False) # 按分为数分为10组，且只给出分为区间的编号而不是具体的区间 
+grouped = frame.data2.groupby(grouping)
+grouped.apply(get_stats).unstack()
+
+
+## 缺失值处理
+s = np.Series(np.random.randn(6))
+s[::2] = np.nan
+s
+
+s.fillna(s.mean())
 
 
 
