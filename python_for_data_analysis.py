@@ -55,10 +55,13 @@ d = 7
 e = 11
 e // d # 取整除法
 e ** d # 幂运算
-e & d # and
-e | d # or
-e ^ d # xor
-e | d # 
+e & d # 位与
+e | d # 位或
+e ^ d # 位异或
+
+not e
+e and d
+e or d
 
 
 ### 惰性
@@ -100,13 +103,14 @@ fval1 = 1.23e-7
 
 cval = 1 + 2j # j表示虚数
 cval * (1 - 2j)
+
 ### 字符串
 a = 'one way of writing a string'
 b = "another way"
 
 c = '''
 this is a long string that
-sapans multiple lines
+spans multiple lines
 '''
 d = """
 to write a multiple string 
@@ -129,8 +133,9 @@ s = '12\\34'  # backslash \, escape character
 print(s)
 
 
-s = r'this\has\no\special\characters' # r''
-s
+s = r'this\has\no\special\characters'
+s # return 'this\\has\\no\\special\\characters'
+print(s) # return this\has\no\special\characters
 
 a = 'this is the first half'
 b = 'and this is the second half'
@@ -448,7 +453,6 @@ c
 seq = [3, 2, 1, 27, 2, 6, 8, 85]
 seq[3:9] # start:stop， start包含在内，stop不包含，元素个数为stop - start
 seq[1:3] = ['a', 'b', 'c']
-# seq[1:4] = ['a', 'b', 'c'] which one is correct
 seq[:5]
 seq[2:]
 seq[-5:]
@@ -493,7 +497,7 @@ firstName, lastName = zip(*pitchers) # 先zip，后unpack
 firstName
 lastName
 # 将元组中的数unzip
-# *seq的用法相当于seq[0], seq[1], ..., seq[len(seq) - 1]
+# # zip(*seq)的用法相当于zip(seq[0], seq[1], ..., seq[len(seq) - 1])，即*seq相当于seq[0], seq[1], ..., seq[len(seq) - 1]
 
 list(range(10))
 list(reversed(range(10))) # reversed 按逆序迭代序列中的元素
@@ -552,12 +556,11 @@ by_letter
 by_letter = {}
 for word in words:
     letter = word[0]
-    by_letter.setdefault(letter, []).append(word) # Q？
+    by_letter.setdefault(letter, []).append(word) # help('dict.setdefault')
 by_letter
 
-# Q？
 from collections import defaultdict
-by_letter = defaultdict(list)
+by_letter = defaultdict(list) # by_letter是一个defaultdict类
 for word in words:
     by_letter[word[0]].append(word)
 by_letter
@@ -736,6 +739,7 @@ arr2 = np.array([1, 2, 3], dtype = np.int32)
 arr1.dtype
 arr2.dtype
 # 当设计的程序涉及数据的存储读取速度时，再考虑数据类型的问题
+
 arr = np.array([1, 2, 3, 4, 5])
 arr.dtype
 float_arr = arr.astype(np.float64) # astype转换类型，会创建一个新的数组
@@ -751,6 +755,7 @@ numeric_float.dtype
 int_array = np.arange(3)
 calibers = np.array([.13, .15, .17], dtype = np.float64) 
 int_array.astype(calibers.dtype) 
+
 empty_unit32 = np.empty(8, dtype = 'u4') # u4 代表无符号的32位（4字节）整型unit32
 empty_unit32
 
@@ -775,12 +780,13 @@ arr
 arr_slice = arr[5:8]
 arr_slice[1] = 12345
 arr #数组的切片是原始的数组视图，数据不会被复制，任何修改都会直接反映到源数组上。numpy用于处理大量数据，切片作用于源数据不会因为复制而造成内存和性能的浪费    
-
 arr_slice[:] = 63
 arr
 
+arr = np.arange(10)
 arr_slice_copy = arr[5:8].copy() #得到切片的一个副本
 arr_slice_copy[:] = 7
+arr_slice_copy
 arr
 
 arr2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
