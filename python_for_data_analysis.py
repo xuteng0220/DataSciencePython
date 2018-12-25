@@ -802,21 +802,26 @@ arr2d[2, :1]
 arr2d[:, :1] # : 表示选取整个轴
 arr2d[:, 1] # 与前一个结果不同
 
+# 判断变量是何种类型
+type(arr2d[2])
+isinstance(arr2d[2][1], (list, np.ndarray))
+# pd.core.series.Series
+type(arr2d[2][1])
+
+arr2d[:, 2:]
+arr2d[:, 2]
+
 arr2d[:2, 1:] = 0
 arr2d
 
 arr3d = np.array([[[1, 2, 3], [4, 5, 6]],[[7, 8, 9], [10, 11, 12]]])
 arr3d
-
 arr3d[0]
 origin_value = arr3d[0].copy()
-
 arr3d[0] = 42
 arr3d
-
 arr3d[0] = origin_value
 arr3d
-
 arr3d[1, 0]
 
 
@@ -836,6 +841,7 @@ data[names == 'paul', 3]
 data[names == 'paul', 3:4] #有冒号表示选取轴
 
 names != 'paul'
+data[names != 'paul']
 data[~(names == 'paul')] # ~ 等价于 !=
 
 mask = (names == 'paul') | (names == 'ryan')
@@ -860,6 +866,7 @@ arr
 
 arr[[1, 5, 7, 2], [0, 3, 1, 2]] # 得到一维数组，4个元素
 arr[[1, 5, 7, 2]]
+# arr[1, 5, 7, 2] IndexError, too many indices
 arr[[1, 5, 7, 2]][:, [0, 3, 1, 2]] # 得到一个4*4的二维数组
 arr[np.ix_([1, 5, 7, 2], [0, 3, 1, 2])] # np.ix_函数将两个一维数组组成可以索引矩阵的索引器
 
@@ -876,7 +883,6 @@ arr = np.arange(16).reshape(2, 2, 4)
 arr
 arr.transpose((1, 0, 2)) # 高维数组的转置需要一个由轴编号组成的元组进行轴对换
 arr.transpose((1, 2, 0))
-
 arr.swapaxes(1, 2) # 进行轴对换，返回源数据的视图，不是创建一个新的数据
 
 ### 数组函数
@@ -888,7 +894,7 @@ x = np.random.randn(8)
 y = np.random.randn(8)
 np.maximum(x, y)
 arr = np.random.randn(7) * 5
-np.modf(arr) # 将小数的整数部分和小数部分分为两个数组
+np.modf(arr) # 将分数分为小数部分和整数部分分为两个数组
 
 
 ### 数组数据处理
@@ -901,13 +907,13 @@ xs, ys = np.meshgrid(points, points)
 xs
 ys
 
-# Q 图如何显示
+
 import matplotlib.pyplot as plt
 z = np.sqrt(xs ** 2 + ys ** 2)
 plt.imshow(z, cmap = plt.cm.gray)
 plt.colorbar()
 plt.title("image plot of $\sqrt{x^2 + y^2}$ for a grid of values")
-
+plt.show() # 显示图片
 
 
 
@@ -926,7 +932,9 @@ np.where(arr > 0, 1, -1)
 np.where(arr > 0, 1, arr)
 
 arr = np.arange(25).reshape(5, 5)
-arr[np.where(arr > 7)] # Q np.where
+arr
+np.where(arr > 7) # indices of the elements where the condition is true
+arr[np.where(arr > 7)]
 
 cond1 = np.array([True, False, True, False])
 cond2 = np.array([False, True, True, False])
@@ -966,6 +974,8 @@ arr.cumprod(1)
 
 ### 用于布尔型数组的方法
 arr = np.random.randn(100)
+arr
+arr > 0
 (arr > 0).sum()
 
 bools = np.array([False, False, True, False])
@@ -976,7 +986,6 @@ bools.all() # all 是否全为True
 ### 排序
 arr = np.random.randn(8)
 arr
-
 arr.sort()
 arr
 
@@ -1055,7 +1064,7 @@ samples = np.random.normal(size=(3, 3))
 samples
 
 from random import normalvariate
-N = 1000000
+N = 10000
 %timeit samples = [normalvariate(0, 1) for _ in range(N)]
 %timeit np.random.normal(size=N)
 
@@ -1085,7 +1094,13 @@ for i in range(steps):
     step = 1 if random.randint(0, 1) else -1
     position += step
     walk.append(position)
-# Q 将随机游走画成图
+
+# 将随机游走画成图
+import matplotlib.pyplot as plt
+plt.plot(walk, c = 'b')
+plt.title('random walk with +1/-1 steps')
+plt.show()
+
 
 nsteps = 1000
 draws = np.random.randint(0, 2, size=nsteps)
@@ -1093,6 +1108,7 @@ steps = np.where(draws > 0, 1, -1)
 walk = steps.cumsum()
 
 (np.abs(walk) >= 10).argmax() # 首次距离原点达到10所需的步数
+
 
 nwalks = 5000
 nsteps = 1000
@@ -1118,8 +1134,9 @@ crossing_times.mean()
 
 
 
-# ch4 Pandas
+# ch5 Pandas
 from pandas import Series, DataFrame
+import numpy as np
 import pandas as pd
 
 ## Series
@@ -1130,14 +1147,15 @@ obj
 obj.values
 obj.index
 obj.index = ['a', 'b', 'c', 'd'] # Series的索引可以通过赋值进行改变
+obj
 
 obj2 = Series([4, 7, -5, 3], index=['d', 'b', 'a', 'c'])
 obj2
 obj2.index
 
 obj2['a']
-
 obj2['b'] = 3
+obj2
 obj2[['a', 'b']]
 
 obj2[obj2 > 1]
@@ -1154,12 +1172,15 @@ obj3
 
 state = ['texas', 'ohio', 'utha', 'california']
 obj4 = Series(sdata, index=state)
+obj4
 
 
 pd.isnull(obj4)
 pd.notnull(obj4) # 检测缺失值
 obj4.isnull()
 
+obj3
+obj4
 obj3 + obj4 # Series数据在运算时能自动对齐索引
 
 obj4.name = 'population'
