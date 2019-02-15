@@ -1189,8 +1189,10 @@ obj4
 
 
 ## DataFrame
+### 创建dataframe
 data = {'state': ['ohio', 'ohio', 'ohio', 'nevada', 'nevada'], 'year': [2000, 2001, 2002, 2001, 2002], 'pop': [1.5, 1.7, 3.6, 2.4, 2.9]}
 frame = DataFrame(data)
+frame
 
 DataFrame(data, columns=['year', 'state', 'pop']) # columns可以指定列的顺序
 
@@ -1219,18 +1221,22 @@ del frame2['eastern']  # 删除列
 frame2.columns
 
 ### 索引行
-frame2[3]
-frame3.iloc[3]
-frame2.loc['two']
+# frame2[3]
+# frame3.iloc[3]
+# frame2.loc['two']
 
-pop = {'nevada': {2001: 2.4, 2002: 2,9}, 'ohio': {2000: 1.5, 2001: 1.7, 2002: 3.6}}
+pop = {'nevada': {2001: 2.4, 2002: 2.9}, 'ohio': {2000: 1.5, 2001: 1.7, 2002: 3.6}}
 frame3 = DataFrame(pop) # 外层字典的key作为column，内层字典的key作为index
 frame3
 
 frame3.T
 DataFrame(pop, index=[2001, 2002, 2003])
 
-frame4 = DataFrame({'ohio': frame3['ohio'][:-1], 'nevada': frame3['nevada'][:2]}) # dataFrame列的数据类型是Series
+frame4 = DataFrame({'ohio': frame3['ohio'][:-1], 'nevada': frame3['nevada'][:2]}) 
+type(frame4['nevada'])
+# dataFrame列的数据类型是Series
+frame4
+
 
 frame3.index.name = 'year'
 frame3.columns.name = 'state'
@@ -1241,11 +1247,12 @@ frame3.values # 数据类型不同
 
 
 ## Series & DataFrame的索引
+### Index对象
 obj = Series(range(3), index=['a', 'b', 'c'])
 obj.index  # index是不可变的，不能对其赋值，obj.index[2] = 'd'，error
 obj.index[1:] 
 
-index = pd.index(np.arange(3))
+index = pd.Index(np.arange(3))
 obj2 = Series([1.5, 2.3, 3.7], index=index)
 obj2
 
@@ -1253,11 +1260,11 @@ frame3
 'ohio' in frame3.columns
 2003 in frame3.index
 
-### 重新索引
+### reindex
 obj = Series([4.5, 7.2, 3.7, 9.1], index=['d', 'a', 'b', 'c'])
 obj
 obj.reindex(['a', 'b', 'c', 'd', 'e'])
-obj.reindex(['a', 'b', 'c', 'e']， fill_value=0)
+obj.reindex(['a', 'b', 'c', 'e'], fill_value=0)
 
 obj3 = Series(['blue', 'purple', 'yellow'], index=[0, 2, 4])
 obj3.reindex(range(6), method='ffill') # 以上一个值补充index
@@ -1276,10 +1283,13 @@ states = ['texas', 'utah', 'california']
 frame.reindex(columns=states)
 frame
 
-frame.reindex(index=['a', 'b', 'c', 'd'], method=ffill, columns=states) # 可以同时对index和column进行reindex，填充空白值只能针对行
+frame.reindex(index=['a', 'b', 'c', 'd'],  columns=states)
+frame.reindex(index=['a', 'b', 'c', 'd'], columns=states).ffill()
+# frame.reindex(index=['a', 'b', 'c', 'd'], method='ffill', columns=states) # error
+# 可以同时对index和column进行reindex，填充空白值只能针对行
 
 frame.loc[['a', 'c'], states]
-
+frame.loc[['a', 'c']]
 
 ### drop 丢弃 删除
 obj = Series(np.arange(5.), index=['a', 'b', 'c', 'd', 'e'])
@@ -1288,6 +1298,7 @@ newObj
 obj.drop(['d', 'c'])
 
 data = DataFrame(np.arange(16).reshape((4, 4)), index=['ohio', 'utha', 'california', 'texas'], columns=['one', 'two', 'three', 'four'])
+data
 data.drop(['texas', 'ohio'])
 data.drop('two', axis=1)
 data.drop(['two', 'four'], axis=1)
@@ -1303,6 +1314,7 @@ obj[obj < 2]
 
 obj['b':'d'] # 利用标签进行切片，与python切片运算不同，其包含末端
 obj['b':'c'] = 7 # 切片赋值
+obj
 
 data = DataFrame(np.arange(16).reshape((4, 4)), index=['ohio', 'utha', 'california', 'texas'], columns=['one', 'two', 'three', 'four'])
 data['two']
@@ -1312,21 +1324,24 @@ data[data['three'] > 5]
 
 data < 5
 data[data < 5] = 0
+data
 
 #### loc iloc
+data
 data.loc['utha', ['two', 'three']]
-data.loc[['texas', 'california'], [3, 0, 1]]
+data.iloc[[3, 2], [3, 0, 1]]
 data.iloc[2]
 data.loc[:'california', 'three']
-data.loc[data.three > 5, :3]
+data.loc[data.three > 5].iloc[:,:3]
 
 #### index有重复值时的索引
 obj = Series(range(5), index=['a', 'a', 'b', 'b', 'c'])
+obj
 obj.index.is_unique # index的属性is_unique
 obj['a'] # type: Series
 obj['c'] # type: value
 frame = DataFrame(np.random.rand(4, 3), index=['a', 'a', 'b', 'b'])
-df.loc['b']
+frame.loc['b']
 
 
 ### 算术运算和数据对齐
@@ -1341,8 +1356,8 @@ d1 + d2 # 取索引和列的并集
 d1 = DataFrame(np.arange(12.).reshape((3, 4)), columns=list('abcd'))
 d2 = DataFrame(np.arange(20.).reshape((4, 5)), columns=list('abcde'))
 d1 + d2
-d1.add(a2, fill_value=0)
-d1.reindex(columns=df2.columns, fill_value=0)
+d1.add(d2, fill_value=0)
+d1.reindex(columns=d2.columns, fill_value=0)
 
 |算术运算|说明|
 |--|--|
@@ -1353,23 +1368,22 @@ d1.reindex(columns=df2.columns, fill_value=0)
 
 
 ### dataframe与series的运算
-arr = np.arange(12.)reshape((3, 4))
+arr = np.arange(12.).reshape((3, 4))
 arr
 arr[0]
-arr - arr[0]
+arr - arr[0] # 每一行都被减了arr[0]，称为broadcasting
 
 frame = DataFrame(np.arange(12.).reshape((4, 3)), columns=list('bde'), index=['utah', 'texas', 'ohio', 'oregon'])
 series = frame.iloc[0]
 frame
 series
-
 frame - series
 
 series2 = Series(range(3), index=['b', 'e', 'f'])
 frame + series2
 
 series3 = frame['d']
-frame.sub(series3, axis=0) # 每一列减去相应值
+frame.sub(series3, axis=0) # 将series的索引匹配到frame的行索引，沿着列进行广播
 
 
 ### apply map
@@ -1377,14 +1391,14 @@ frame = DataFrame(np.random.randn(4, 3), columns=list('bde'), index=['texas', 'u
 np.abs(frame)
 
 f = lambda x: x.max() - x.min()
-frame.apple(f)
-frame.apple(f, axis=1)
+frame
+frame.apply(f) # 默认apply到行
+frame.apply(f, axis=1)
 
 def f(x):
-	return Series([x.min(), x.max()], index=['min', 'max'])
-a = frame.apple(f)
+    return Series([x.min(), x.max()], index=['min', 'max'])
+a = frame.apply(f)
 type(a)
-a.dtype
 a
 
 format = lambda x: '%.2f' % x
@@ -1393,24 +1407,24 @@ frame['e'].map(format) # Series应用map函数作用于每一个元素
 
 
 ### 排序 排名
-
 obj = Series(range(4), index=['d', 'a', 'c', 'b'])
 obj.sort_index()
 
 frame = DataFrame(np.arange(8).reshape((2,4)), index=['three', 'one'], columns=['d', 'c', 'a', 'b'])
+frame
 frame.sort_index()
 frame.sort_index(axis=1)
 frame.sort_index(axis=1, ascending=False)
 
 obj = Series([1.5, 6.2, 9.1, 2.7])
-obj.order()
-
+obj.sort_values() # 对值进行排序
 obj = Series([1.5, np.nan, 6.2, 9.1, np.nan, 2.7])
-obj.order() # nan排序后放在末尾
+obj.sort_values() # nan排序后放在末尾
 
-frame = DataFrame({'b': [3, 7, 2, 1], 'a': [7, 9, 6, 3]})
-frame.sort_index(by='b')
-frame.sort_index(by=['a', 'b'])
+frame = DataFrame({'b': [3, 7, 2, 1], 'a': [7, 9, 10, 3]})
+frame
+frame.sort_values(by='b')
+frame.sort_values(by=['a', 'b']) # 先以a列，在a列基础上以b列
 
 obj = Series([7, -5, 7, 4, 2, 0, 4])
 obj.rank() # 给出排序值，rank的method有average(default)，min，max，first
