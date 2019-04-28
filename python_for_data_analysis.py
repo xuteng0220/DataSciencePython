@@ -1392,7 +1392,7 @@ np.abs(frame)
 
 f = lambda x: x.max() - x.min()
 frame
-frame.apply(f) # 默认apply到行
+frame.apply(f) # apply默认对行进行
 frame.apply(f, axis=1)
 
 def f(x):
@@ -1436,7 +1436,8 @@ frame.rank(axis=1)
 
 
 ### 描述性统计
-df = DataFrame([1.5, np.nan], [1.7, 2.9], [np.nan, np.nan], [0.29, -3.8], index=['a', 'b', 'c', 'd'], columns=['one', 'two'])
+df = DataFrame([[1.5, np.nan], [1.7, 2.9], [np.nan, np.nan], [0.29, -3.8]], index=['a', 'b', 'c', 'd'], columns=['one', 'two'])
+df
 df.sum() # na值被忽略，只对非na起作用
 df.sum(axis=0)
 df.sum(axis=1)
@@ -1444,10 +1445,11 @@ df.sum(axis=1)
 df.mean(axis=1, skipna=False)
 df.idxmax()
 df.idxmin()
-df.cumsum() # Q默认axis是什么
+df.cumsum() # axis默认是0，按行进行
 df.describe()
 
 obj = Series(['a', 'a', 'b', 'c'] * 4)
+obj
 obj.describe()
 
 |描述性统计方法|说明|
@@ -1482,7 +1484,7 @@ returns.corrwith(returns.IBM)
 returns.corrwith(volume)
 
 obj = Series(['c', 'd', 'a', 'c', 'd', 'b', 'c'])
-uniques = obj.uniques()
+uniques = obj.unique()
 uniques.sort()
 obj.value_counts() # 计数
 pd.value_counts(obj.values, sort=False)
@@ -1505,26 +1507,29 @@ data = Series([1, NA, 3.5, NA, 7])
 data.dropna()
 data[data.notnull()]
 
-data0 = DataFrame([1, 6.5, 3], [1, NA, NA], [NA, NA, 1], [3, 2, 7]) # 与下面的data有何区别
-data = DataFrame([[1, 6.5, 3], [1, NA, NA], [NA, NA, 1], [3, 2, 7]])
+data0 = DataFrame([1, 6.5, 3], [1, NA, NA], [NA, NA, NA], [3, 2, 7]) # 报错
+data = DataFrame([[1, 6.5, 3], [1, NA, NA], [NA, NA, NA], [3, 2, 7]])
 data.dropna() # dropna默认丢弃任何含有缺失值的行
 data.dropna(how='all') # 丢弃整行为NA的行
 data.dropna(axis=1, how='all')
 
 data[5] = NA # 增加一列，全为NA
 data.loc[5] = NA # 增加一行 
+# data.iloc[9] = NA # iloc position base，报错single positional indexer is out-of-bounds
+# data
 
 df = DataFrame(np.random.randn(7, 3))
+df
 df.loc[:4, 1] = NA
 df.loc[:2, 2] = NA
 df
-df.dropna(thresh=3) # thresh
+df.dropna(thresh=2)  # keep only the rows with at least 2 non-NA values
 
 ### 填充缺失值
 df.fillna(0)
 df.fillna({1: 7, 3: 11}) # 参数为字典形式，对指定的列填充指定的数值
 
-- = df.fillna(q, inplace=True) # fillna默认返回新对象，inplace对现有对象就地修改
+_ = df.fillna(0, inplace=True) # fillna默认返回新对象，inplace对现有对象就地修改
 df
 
 df = DataFrame(np.random.randn(6, 3))
@@ -1532,7 +1537,7 @@ df.loc[2:, 1] = NA
 df.loc[4:, 2] = NA
 df
 df.fillna(method='ffill')
-df.fillna(method='ffill', limit=3)
+df.fillna(method='ffill', limit=2) # 可以连续填充的最大数量
 
 data = Series([1., NA, 3.5, NA, 7])
 data.fillna(data.mean())
@@ -1540,6 +1545,7 @@ data.fillna(data.mean())
 
 ### 层次化索引 hierarchical indexing
 data = Series(np.random.randn(10), index=[['a', 'a', 'a', 'b', 'b', 'b','c', 'c', 'd', 'd'], [1, 2, 3, 1, 2, 3, 1, 2, 2, 3]]) # 带有multiindex的Series
+data
 data.index
 data['b']
 data['b': 'c']
@@ -1554,11 +1560,17 @@ frame.index.names = ['key1', 'key2']
 frame.columns.names = ['state', 'color']
 frame
 frame['ohio']
-MultiIndex.from_arrays([['ohio', 'ohio', 'california'], ['green', 'red', 'green'], names=['state', 'color']]) # Q?
+
+
+mIndex = pd.MultiIndex.from_arrays([['ohio', 'ohio', 'california'], ['green', 'red', 'green']], names=['state', 'color'])
+mIndex
+frame1 = DataFrame(np.arange(9).reshape((3, 3)), index = mIndex)
+frame1
 
 frame.swaplevel('key1', 'key2') # 调换index的层级
-frame.sortlevel(1) # Q？ 针对index，如何针对columns？
-frame.swaplevel(0, 1).sortlevel(0)
+frame.sort_index(level = 'key2') # 以key2对行进行排序
+frame.sort_index(level = 'color', axis = 1) # 以color对列进行排序
+frame.swaplevel(0, 1).sort_index(level = 'key2')
 
 frame.sum(level='key2')
 frame.sum(level='color', axis=1)
@@ -1568,6 +1580,7 @@ frame.sum(level='color', axis=1)
 frame = DataFrame({'a': range(7), 'b': range(7, 0, -1), 'c': ['one', 'two', 'two', 'three', 'one', 'two', 'three'], 'd': [0, 1, 1, 1, 2, 2, 1]})
 frame
 frame2 = frame.set_index(['c', 'd']) # 将列的值作为索引
+frame2
 frame.set_index(['c', 'd'], drop=False) # 将列的值作为索引，同时保留列
 frame2.reset_index()
 
@@ -1576,9 +1589,10 @@ frame2.reset_index()
 s = Series(np.arange(3))
 s[-1] # 对于未指定索引值的数据，默认索引值为整数，用整数进行索引时可能报错
 s.iloc[-1]
+s1 = Series(np.arange(3), index = ['a', 'b', 'c'])
+s1[-1] # 指定了索引，可以用整数进行索引，不推荐使用
+s.iloc[-1]
 
-s1 = Series(np.arange(3), index=['a', 'b', 'c'])
-s1[-1]
 
 s2 = Series(range(3), index=[-5, 1, 3])
 s2.iget_value(2)
@@ -1612,13 +1626,15 @@ stacked.to_panel() # 将DataFrame转化成panel，to_frame是其逆
 ## 合并数据集
 df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'a', 'b'], 'data1': range(7)})
 df2 = DataFrame({'key': ['a', 'b', 'd'], 'data2': range(3)})
+df1
+df2
 pd.merge(df1, df2) # 未指明的情况下，merge将重叠的列作为键进行合并
 pd.merge(df1, df2, on='key')
 
 df3 = DataFrame({'lkey': ['b', 'b', 'a', 'c', 'a', 'a', 'b'], 'data1': range(7)})
 df4 = DataFrame({'rkey': ['a', 'b', 'd'], 'data2': range(3)})
-pd.merge(df1, df2, left_on='lkey', right_on='rkey') # merge默认是inner连接
-pd.merge(df1, df2, how='outer')
+pd.merge(df3, df4, left_on='lkey', right_on='rkey') # merge默认是inner连接
+
 
 df1 = DataFrame({'key': ['b', 'b', 'a', 'c', 'a', 'b'], 'data1': range(6)})
 df2 = DataFrame({'key': ['a', 'b', 'a', 'b', 'd'], 'data2': range(5)})
@@ -1640,14 +1656,16 @@ pd.merge(left, right, on='key1', suffixes=('_left', '_right')) # 参数suffixes�
 ## 索引作为链接键进行合并
 left1 = DataFrame({'key': ['a', 'b', 'a', 'a', 'b', 'c'],
                  'value': range(6)})
-right1 = DataFrame({'group_val': [3.5, 7], index=['a', 'b']})
+right1 = DataFrame({'group_val': [3.5, 7]}, index=['a', 'b'])
 pd.merge(left1, right1, left_on='key', right_index=True) # left_on 左侧DataFrame中用作链接的键，right_index右侧DataFrame以其index作为链接的键
 pd.merge(left1, right1, left_on='key', right_index=True, how='outer')
 
 lefth = DataFrame({'key1': ['ohio', 'ohio', 'ohio', 'nevada', 'nevada'], 'key2': [2000, 20001, 2002, 20001, 2002], 'data': np.arange(5.)})
-righth = DataFrame({np.arange(12).reshape((6, 2)), index=[['nevada', 'nevada', 'ohio', 'ohio', 'ohio', 'ohio'], [2001, 2000, 2000, 2000, 2001, 2002]], columns=['event1', 'envent2']}) # 层次化索引，多个索引列
-pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True) 
-pd.merge(letfh, righth, left_on=['key1', 'key2'], right_index=True, how='outer')
+righth = DataFrame(np.arange(12).reshape((6, 2)), index=[['nevada', 'nevada', 'ohio', 'ohio', 'ohio', 'ohio'], [2001, 2000, 2000, 2000, 2001, 2002]], columns=['event1', 'envent2']) # 层次化索引，多个索引列
+lefth
+righth
+pd.merge(lefth, righth, left_on=['key1', 'key2'], right_index=True) 
+pd.merge(lefth, righth, left_on=['key1', 'key2'], right_index=True, how='outer')
 
 left2 = DataFrame([[1., 2.], [3., 4.], [5., 6.]], index=['a', 'c', 'e'], columns=['ohio', 'nevada'])
 right2 = DataFrame([[7., 8.], [9., 20.], [11., 12.], [13., 14.]], index=['b', 'c', 'd', 'e'], columns=['missouri', 'alabama'])
